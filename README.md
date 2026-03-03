@@ -107,3 +107,87 @@ rolepilot-backend/
 ├── .env.example
 └── go.mod
 ```
+
+
+## Database Schema
+```mermaid
+erDiagram
+    users {
+        UUID id PK
+        VARCHAR email UK
+        VARCHAR password_hash
+        VARCHAR full_name
+        TEXT resume_url
+        TEXT resume_text
+        TEXT[] skills
+        INTEGER experience_years
+        VARCHAR target_role
+        INTEGER target_salary_min
+        INTEGER target_salary_max
+        TEXT[] preferred_locations
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    job_applications {
+        UUID id PK
+        UUID user_id FK
+        TEXT job_url
+        TEXT raw_posting_text
+        VARCHAR company_name
+        TEXT company_summary
+        VARCHAR role_title
+        TEXT role_summary
+        JSONB required_skills
+        JSONB nice_to_have_skills
+        JSONB key_technologies
+        VARCHAR experience_level
+        VARCHAR salary_range
+        VARCHAR location
+        VARCHAR remote_policy
+        INTEGER match_score
+        JSONB matching_strengths
+        JSONB potential_gaps
+        JSONB interview_focus_areas
+        JSONB suggested_talking_points
+        VARCHAR current_stage
+        VARCHAR processing_status
+        TIMESTAMPTZ applied_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    stage_history {
+        UUID id PK
+        UUID application_id FK
+        VARCHAR from_stage
+        VARCHAR to_stage
+        TEXT notes
+        TIMESTAMPTZ moved_at
+    }
+
+    cover_letters {
+        UUID id PK
+        UUID application_id FK
+        TEXT content
+        INTEGER version
+        VARCHAR tone
+        TIMESTAMPTZ created_at
+    }
+
+    saved_job_listings {
+        UUID id PK
+        UUID user_id FK
+        TEXT source_url
+        VARCHAR title
+        VARCHAR company
+        INTEGER match_score
+        TEXT match_reasoning
+        TIMESTAMPTZ discovered_at
+    }
+
+    users ||--o{ job_applications : "has many"
+    users ||--o{ saved_job_listings : "has many"
+    job_applications ||--o{ stage_history : "has many"
+    job_applications ||--o{ cover_letters : "has many"
+```
