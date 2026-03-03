@@ -30,6 +30,7 @@ func main() {
 	aiService := services.NewAIService()
 	authHandler := handler.NewAuthHandler(db)
 	appHandler := handler.NewApplicationHandler(db, aiService)
+	meetingHandler := handler.NewMeetingHandler(db)
 
 	r := chi.NewRouter()
 
@@ -68,6 +69,15 @@ func main() {
 		r.Get("/api/applications/{id}", appHandler.Get)
 		r.Patch("/api/applications/{id}/stage", appHandler.UpdateStage)
 		r.Get("/api/applications/{id}/history", appHandler.GetStageHistory)
+
+		// Meetings (per application)
+		r.Post("/api/applications/{id}/meetings", meetingHandler.Create)
+		r.Get("/api/applications/{id}/meetings", meetingHandler.List)
+
+		// Meetings (global)
+		r.Get("/api/meetings/upcoming", meetingHandler.Upcoming)
+		r.Patch("/api/meetings/{meetingId}", meetingHandler.Update)
+		r.Delete("/api/meetings/{meetingId}", meetingHandler.Delete)
 	})
 
 	port := os.Getenv("PORT")

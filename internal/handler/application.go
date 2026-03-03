@@ -149,11 +149,12 @@ func (h *ApplicationHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateStage handles PATCH /api/applications/{id}/stage
+
 func (h *ApplicationHandler) UpdateStage(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 	appID := chi.URLParam(r, "id")
 
-	var req models.UpdateStageRequest
+	var req models.UpdateStageWithMeetingRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, models.APIResponse{Error: "invalid request body"})
 		return
@@ -184,6 +185,17 @@ func (h *ApplicationHandler) UpdateStage(w http.ResponseWriter, r *http.Request)
 		log.Println("UpdateStage error:", err)
 		writeJSON(w, http.StatusInternalServerError, models.APIResponse{Error: "failed to update stage"})
 		return
+	}
+
+	// If meeting details were included, create the meeting
+	if req.Meeting != nil {
+		if req.Meeting.LocationType == "" {
+			req.Meeting.LocationType = "video"
+		}
+		_, err := h.DB.CreateMeeting(r.Context(), appID, userID, req.ToStage, *req.Meeting)
+		if err != nil {
+			log.Println("CreateMeeting on stage change error:", err)
+		}
 	}
 
 	updated, err := h.DB.GetApplication(r.Context(), appID, userID)

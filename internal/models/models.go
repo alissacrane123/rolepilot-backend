@@ -203,3 +203,59 @@ type AIExtractionResult struct {
 	InterviewFocusAreas []string `json:"interview_focus_areas"`
 	SuggestedTalkingPts []string `json:"suggested_talking_points"`
 }
+
+// ============================================
+// MEETINGS
+// ============================================
+
+type Meeting struct {
+	ID              string     `json:"id"`
+	ApplicationID   string     `json:"application_id"`
+	UserID          string     `json:"user_id"`
+	Stage           string     `json:"stage"`
+	ScheduledAt     *time.Time `json:"scheduled_at,omitempty"`
+	DurationMinutes *int       `json:"duration_minutes,omitempty"`
+	Timezone        *string    `json:"timezone,omitempty"`
+	LocationType    string     `json:"location_type"`
+	LocationDetails *string    `json:"location_details,omitempty"`
+	MeetingType     *string    `json:"meeting_type,omitempty"`
+	ContactName     *string    `json:"contact_name,omitempty"`
+	ContactTitle    *string    `json:"contact_title,omitempty"`
+	PrepNotes       *string    `json:"prep_notes,omitempty"`
+	PostNotes       *string    `json:"post_notes,omitempty"`
+	Outcome         *string    `json:"outcome,omitempty"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+}
+
+type CreateMeetingRequest struct {
+	ScheduledAt     *time.Time `json:"scheduled_at,omitempty"`
+	DurationMinutes *int       `json:"duration_minutes,omitempty"`
+	Timezone        *string    `json:"timezone,omitempty"`
+	LocationType    string     `json:"location_type"`
+	LocationDetails *string    `json:"location_details,omitempty"`
+	MeetingType     *string    `json:"meeting_type,omitempty"`
+	ContactName     *string    `json:"contact_name,omitempty"`
+	ContactTitle    *string    `json:"contact_title,omitempty"`
+	PrepNotes       *string    `json:"prep_notes,omitempty"`
+}
+
+type UpdateMeetingRequest struct {
+	ScheduledAt     *time.Time `json:"scheduled_at,omitempty"`
+	DurationMinutes *int       `json:"duration_minutes,omitempty"`
+	Timezone        *string    `json:"timezone,omitempty"`
+	LocationType    *string    `json:"location_type,omitempty"`
+	LocationDetails *string    `json:"location_details,omitempty"`
+	MeetingType     *string    `json:"meeting_type,omitempty"`
+	ContactName     *string    `json:"contact_name,omitempty"`
+	ContactTitle    *string    `json:"contact_title,omitempty"`
+	PrepNotes       *string    `json:"prep_notes,omitempty"`
+	PostNotes       *string    `json:"post_notes,omitempty"`
+	Outcome         *string    `json:"outcome,omitempty"`
+}
+
+type UpdateStageWithMeetingRequest struct {
+	ToStage string                `json:"to_stage"`
+	Notes   string                `json:"notes"`
+	Meeting *CreateMeetingRequest `json:"meeting,omitempty"`
+}

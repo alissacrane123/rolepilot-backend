@@ -82,6 +82,15 @@ An AI-powered job application tracker that helps you manage your job search, ana
 | PATCH | `/api/applications/{id}/stage` | Move to new stage with notes |
 | GET | `/api/applications/{id}/history` | Full stage transition history |
 
+### Meetings
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/applications/{id}/meetings` | Add meeting to an application |
+| GET | `/api/applications/{id}/meetings` | List meetings for an application |
+| GET | `/api/meetings/upcoming` | All upcoming meetings (for calendar) |
+| PATCH | `/api/meetings/{meetingId}` | Update meeting details/notes/outcome |
+| DELETE | `/api/meetings/{meetingId}` | Delete a meeting |
+
 ## Project Structure
 
 ```
@@ -90,10 +99,12 @@ rolepilot-backend/
 ├── internal/
 │   ├── database/
 │   │   ├── db.go                # Connection pool, user queries
-│   │   └── application.go       # Application + stage queries
+│   │   ├── application.go       # Application + stage queries
+│   │   └── meeting.go           # Meeting CRUD queries
 │   ├── handler/
 │   │   ├── auth.go              # Register, login, profile, resume upload
 │   │   ├── application.go       # CRUD, stage transitions, AI trigger
+│   │   ├── meeting.go           # Meeting CRUD + upcoming
 │   │   ├── helpers.go           # Response helpers
 │   │   └── pdf.go               # PDF text extraction
 │   ├── middleware/
@@ -103,7 +114,8 @@ rolepilot-backend/
 │   └── services/
 │       └── ai.go                # Claude API integration
 ├── migrations/
-│   └── 001_init.sql             # Database schema
+│   ├── 001_init.sql             # Database schema
+│   └── 002_meetings.sql         # Meetings table
 ├── .env.example
 └── go.mod
 ```
@@ -185,6 +197,28 @@ erDiagram
         TEXT match_reasoning
         TIMESTAMPTZ discovered_at
     }
+
+    meetings {
+        UUID id PK
+        UUID application_id FK
+        UUID user_id FK
+        VARCHAR stage
+        TIMESTAMPTZ scheduled_at
+        INTEGER duration_minutes
+        VARCHAR timezone
+        VARCHAR location_type
+        TEXT location_details
+        VARCHAR meeting_type
+        VARCHAR contact_name
+        VARCHAR contact_title
+        TEXT prep_notes
+        TEXT post_notes
+        VARCHAR outcome
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    job_applications ||--o{ meetings : "has many"
 
     users ||--o{ job_applications : "has many"
     users ||--o{ saved_job_listings : "has many"
