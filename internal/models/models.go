@@ -64,6 +64,7 @@ type APIResponse struct {
 // ============================================
 
 var ValidStages = map[string]bool{
+	"saved":               true,
 	"applied":             true,
 	"recruiter_response":  true,
 	"phone_screen":        true,
@@ -144,6 +145,7 @@ type StageHistory struct {
 // ============================================
 
 type BoardView struct {
+	Saved              []JobApplication `json:"saved"`
 	Applied            []JobApplication `json:"applied"`
 	RecruiterResponse  []JobApplication `json:"recruiter_response"`
 	PhoneScreen        []JobApplication `json:"phone_screen"`

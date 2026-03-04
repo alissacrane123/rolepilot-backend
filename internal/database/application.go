@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"encoding/json"
+	"fmt"
 
 	"github.com/alissacrane123/rolepilot-backend/internal/models"
 )
@@ -32,7 +32,7 @@ func (db *DB) CreateApplication(ctx context.Context, userID string, req models.C
 	// Create initial stage history entry
 	_, err = db.Pool.Exec(ctx, `
 		INSERT INTO stage_history (application_id, to_stage, notes)
-		VALUES ($1, 'applied', 'Application created')
+		VALUES ($1, 'saved', 'Application created')
 	`, app.ID)
 	if err != nil {
 		return nil, fmt.Errorf("create initial stage history: %w", err)
@@ -47,13 +47,13 @@ func (db *DB) CreateApplication(ctx context.Context, userID string, req models.C
 func (db *DB) GetApplication(ctx context.Context, appID, userID string) (*models.JobApplication, error) {
 	app := &models.JobApplication{}
 	var (
-		reqSkills    []byte
-		niceSkills   []byte
-		keyTech      []byte
-		strengths    []byte
-		gaps         []byte
-		focusAreas   []byte
-		talkingPts   []byte
+		reqSkills  []byte
+		niceSkills []byte
+		keyTech    []byte
+		strengths  []byte
+		gaps       []byte
+		focusAreas []byte
+		talkingPts []byte
 	)
 
 	err := db.Pool.QueryRow(ctx, `
@@ -89,13 +89,27 @@ func (db *DB) GetApplication(ctx context.Context, appID, userID string) (*models
 	json.Unmarshal(talkingPts, &app.SuggestedTalkingPts)
 
 	// Ensure non-nil slices for clean JSON output
-	if app.RequiredSkills == nil { app.RequiredSkills = []string{} }
-	if app.NiceToHaveSkills == nil { app.NiceToHaveSkills = []string{} }
-	if app.KeyTechnologies == nil { app.KeyTechnologies = []string{} }
-	if app.MatchingStrengths == nil { app.MatchingStrengths = []string{} }
-	if app.PotentialGaps == nil { app.PotentialGaps = []string{} }
-	if app.InterviewFocusAreas == nil { app.InterviewFocusAreas = []string{} }
-	if app.SuggestedTalkingPts == nil { app.SuggestedTalkingPts = []string{} }
+	if app.RequiredSkills == nil {
+		app.RequiredSkills = []string{}
+	}
+	if app.NiceToHaveSkills == nil {
+		app.NiceToHaveSkills = []string{}
+	}
+	if app.KeyTechnologies == nil {
+		app.KeyTechnologies = []string{}
+	}
+	if app.MatchingStrengths == nil {
+		app.MatchingStrengths = []string{}
+	}
+	if app.PotentialGaps == nil {
+		app.PotentialGaps = []string{}
+	}
+	if app.InterviewFocusAreas == nil {
+		app.InterviewFocusAreas = []string{}
+	}
+	if app.SuggestedTalkingPts == nil {
+		app.SuggestedTalkingPts = []string{}
+	}
 
 	return app, nil
 }
@@ -143,6 +157,7 @@ func (db *DB) GetBoardView(ctx context.Context, userID string) (*models.BoardVie
 	}
 
 	board := &models.BoardView{
+		Saved:              []models.JobApplication{},
 		Applied:            []models.JobApplication{},
 		RecruiterResponse:  []models.JobApplication{},
 		PhoneScreen:        []models.JobApplication{},
@@ -156,6 +171,8 @@ func (db *DB) GetBoardView(ctx context.Context, userID string) (*models.BoardVie
 
 	for _, app := range apps {
 		switch app.CurrentStage {
+		case "saved":
+			board.Saved = append(board.Saved, app)
 		case "applied":
 			board.Applied = append(board.Applied, app)
 		case "recruiter_response":
