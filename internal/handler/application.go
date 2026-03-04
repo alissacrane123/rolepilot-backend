@@ -171,10 +171,10 @@ func (h *ApplicationHandler) UpdateStage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if models.TerminalStages[app.CurrentStage] {
-		writeJSON(w, http.StatusBadRequest, models.APIResponse{Error: "cannot transition from terminal stage: " + app.CurrentStage})
-		return
-	}
+	// if models.TerminalStages[app.CurrentStage] {
+	// 	writeJSON(w, http.StatusBadRequest, models.APIResponse{Error: "cannot transition from terminal stage: " + app.CurrentStage})
+	// 	return
+	// }
 
 	if app.CurrentStage == req.ToStage {
 		writeJSON(w, http.StatusBadRequest, models.APIResponse{Error: "application is already in stage: " + req.ToStage})
