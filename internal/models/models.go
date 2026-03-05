@@ -261,3 +261,37 @@ type UpdateStageWithMeetingRequest struct {
 	Notes   string                `json:"notes"`
 	Meeting *CreateMeetingRequest `json:"meeting,omitempty"`
 }
+
+
+type CoverLetter struct {
+	ID            string    `json:"id"`
+	ApplicationID string    `json:"application_id"`
+	Content       string    `json:"content"`
+	Version       int       `json:"version"`
+	Tone          string    `json:"tone"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+type GenerateCoverLetterRequest struct {
+	Tone string `json:"tone"`
+}
+
+type Note struct {
+	ID            string    `json:"id"`
+	ApplicationID string    `json:"application_id"`
+	UserID        string    `json:"user_id"`
+	Title         string    `json:"title"`
+	Content       *string   `json:"content"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+type CreateNoteRequest struct {
+	Title   string  `json:"title"`
+	Content *string `json:"content,omitempty"`
+}
+
+type UpdateNoteRequest struct {
+	Title   *string `json:"title,omitempty"`
+	Content *string `json:"content,omitempty"`
+}

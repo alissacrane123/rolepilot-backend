@@ -178,7 +178,7 @@ Instructions:
 2. If a field is not mentioned in the posting, use null for strings and empty arrays for lists
 3. For match_score, be realistic — consider years of experience, specific technologies, and domain knowledge
 4. For suggested_talking_points, reference SPECIFIC items from my resume that align with this role
-5. For potential_gaps, only list significant gaps, not minor ones
+5. For potential_gaps, only list significant gaps, not minor ones. Also consider actions I can take to address them.
 
 Return ONLY valid JSON (no markdown fences, no explanation) matching this exact schema:
 {
@@ -227,4 +227,66 @@ Return ONLY valid JSON (no markdown fences, no explanation) matching this exact 
 	if result.SuggestedTalkingPts == nil { result.SuggestedTalkingPts = []string{} }
 
 	return &result, nil
+}
+
+
+func (s *AIService) GenerateCoverLetter(ctx context.Context, app *models.JobApplication, user *models.User, tone string) (string, error) {
+	if tone == "" {
+		tone = "professional"
+	}
+
+	resumeSection := "No resume provided"
+	if user.ResumeText != nil && *user.ResumeText != "" {
+		resumeSection = *user.ResumeText
+	}
+
+	var postingSection string
+	if app.RawPostingText != nil && *app.RawPostingText != "" {
+		postingSection = *app.RawPostingText
+		if len(postingSection) > 10000 {
+			postingSection = postingSection[:10000]
+		}
+	} else {
+		// Build from extracted data
+		postingSection = fmt.Sprintf("Company: %s\nRole: %s\n", safeStr(app.CompanyName), safeStr(app.RoleTitle))
+		if app.RoleSummary != nil {
+			postingSection += fmt.Sprintf("Role Summary: %s\n", *app.RoleSummary)
+		}
+	}
+
+	prompt := fmt.Sprintf(`You are an expert cover letter writer.
+
+Write a cover letter for the following job application. The letter should be %s in tone.
+
+<job_posting>
+%s
+</job_posting>
+
+<my_resume>
+%s
+</my_resume>
+
+<applicant_name>%s</applicant_name>
+
+Instructions:
+1. Write 3-4 paragraphs maximum
+2. Reference SPECIFIC experiences from the resume that are relevant to this role
+3. Do NOT use generic phrases like "I am writing to express my interest" or "I believe I would be a great fit"
+4. Do NOT include placeholders like [Company Name] — use the actual company and role names
+5. Be specific about what the applicant brings and why this role is a good match
+6. Match the tone: professional = formal but warm, conversational = friendly and direct, enthusiastic = energetic and passionate
+7. Do NOT include a header, date, or address block — just the letter body
+8. End with "Best regards," followed by the applicant's full name on the next line
+
+Return ONLY the cover letter text, no commentary.`, tone, postingSection, resumeSection, user.FullName)
+
+	return s.callClaude(ctx, prompt, 1500)
+}
+
+// helper for nil string pointers
+func safeStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

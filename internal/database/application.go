@@ -307,3 +307,49 @@ func (db *DB) SetApplicationProcessingStatus(ctx context.Context, appID, status 
 	`, appID, status)
 	return err
 }
+
+
+
+func (db *DB) CreateCoverLetter(ctx context.Context, applicationID, content, tone string) (*models.CoverLetter, error) {
+	cl := &models.CoverLetter{}
+	err := db.Pool.QueryRow(ctx, `
+		INSERT INTO cover_letters (application_id, content, tone, version)
+		VALUES ($1, $2, $3, COALESCE((
+			SELECT MAX(version) FROM cover_letters WHERE application_id = $1
+		), 0) + 1)
+		RETURNING id, application_id, content, version, tone, created_at
+	`, applicationID, content, tone).Scan(
+		&cl.ID, &cl.ApplicationID, &cl.Content, &cl.Version, &cl.Tone, &cl.CreatedAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("create cover letter: %w", err)
+	}
+	return cl, nil
+}
+
+func (db *DB) GetCoverLetters(ctx context.Context, applicationID string) ([]models.CoverLetter, error) {
+	rows, err := db.Pool.Query(ctx, `
+		SELECT id, application_id, content, version, tone, created_at
+		FROM cover_letters
+		WHERE application_id = $1
+		ORDER BY version DESC
+	`, applicationID)
+	if err != nil {
+		return nil, fmt.Errorf("get cover letters: %w", err)
+	}
+	defer rows.Close()
+
+	var letters []models.CoverLetter
+	for rows.Next() {
+		var cl models.CoverLetter
+		err := rows.Scan(&cl.ID, &cl.ApplicationID, &cl.Content, &cl.Version, &cl.Tone, &cl.CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("scan cover letter: %w", err)
+		}
+		letters = append(letters, cl)
+	}
+	if letters == nil {
+		letters = []models.CoverLetter{}
+	}
+	return letters, nil
+}

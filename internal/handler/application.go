@@ -225,3 +225,85 @@ func (h *ApplicationHandler) GetStageHistory(w http.ResponseWriter, r *http.Requ
 
 	writeJSON(w, http.StatusOK, models.APIResponse{Data: history})
 }
+
+// Reanalyze handles POST /api/applications/{id}/reanalyze
+func (h *ApplicationHandler) Reanalyze(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r)
+	appID := chi.URLParam(r, "id")
+
+	app, err := h.DB.GetApplication(r.Context(), appID, userID)
+	if err != nil {
+		writeJSON(w, http.StatusNotFound, models.APIResponse{Error: "application not found"})
+		return
+	}
+
+	if app.RawPostingText == nil || *app.RawPostingText == "" {
+		writeJSON(w, http.StatusBadRequest, models.APIResponse{Error: "no job posting text to analyze"})
+		return
+	}
+
+	h.DB.SetApplicationProcessingStatus(r.Context(), appID, "processing")
+
+	go h.processApplication(appID, userID)
+
+	writeJSON(w, http.StatusOK, models.APIResponse{Message: "re-analysis started"})
+}
+
+// GenerateCoverLetter handles POST /api/applications/{id}/cover-letter
+func (h *ApplicationHandler) GenerateCoverLetter(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r)
+	appID := chi.URLParam(r, "id")
+
+	var req models.GenerateCoverLetterRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, models.APIResponse{Error: "invalid request body"})
+		return
+	}
+
+	if req.Tone == "" {
+		req.Tone = "professional"
+	}
+
+	app, err := h.DB.GetApplication(r.Context(), appID, userID)
+	if err != nil {
+		writeJSON(w, http.StatusNotFound, models.APIResponse{Error: "application not found"})
+		return
+	}
+
+	user, err := h.DB.GetUserByID(r.Context(), userID)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, models.APIResponse{Error: "failed to fetch user"})
+		return
+	}
+
+	content, err := h.AIService.GenerateCoverLetter(r.Context(), app, user, req.Tone)
+	if err != nil {
+		log.Println("GenerateCoverLetter error:", err)
+		writeJSON(w, http.StatusInternalServerError, models.APIResponse{Error: "failed to generate cover letter"})
+		return
+	}
+
+	cl, err := h.DB.CreateCoverLetter(r.Context(), appID, content, req.Tone)
+	if err != nil {
+		log.Println("SaveCoverLetter error:", err)
+		writeJSON(w, http.StatusInternalServerError, models.APIResponse{Error: "failed to save cover letter"})
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, models.APIResponse{Data: cl})
+}
+
+// GetCoverLetters handles GET /api/applications/{id}/cover-letters
+func (h *ApplicationHandler) GetCoverLetters(w http.ResponseWriter, r *http.Request) {
+	appID := chi.URLParam(r, "id")
+
+	letters, err := h.DB.GetCoverLetters(r.Context(), appID)
+	if err != nil {
+		log.Println("GetCoverLetters error:", err)
+		writeJSON(w, http.StatusInternalServerError, models.APIResponse{Error: "failed to fetch cover letters"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, models.APIResponse{Data: letters})
+}
+

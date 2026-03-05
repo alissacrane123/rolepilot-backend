@@ -31,6 +31,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(db)
 	appHandler := handler.NewApplicationHandler(db, aiService)
 	meetingHandler := handler.NewMeetingHandler(db)
+	noteHandler := handler.NewNoteHandler(db)
 
 	r := chi.NewRouter()
 
@@ -69,6 +70,9 @@ func main() {
 		r.Get("/api/applications/{id}", appHandler.Get)
 		r.Patch("/api/applications/{id}/stage", appHandler.UpdateStage)
 		r.Get("/api/applications/{id}/history", appHandler.GetStageHistory)
+		r.Post("/api/applications/{id}/reanalyze", appHandler.Reanalyze)
+		r.Post("/api/applications/{id}/cover-letter", appHandler.GenerateCoverLetter)
+		r.Get("/api/applications/{id}/cover-letters", appHandler.GetCoverLetters)
 
 		// Meetings (per application)
 		r.Post("/api/applications/{id}/meetings", meetingHandler.Create)
@@ -78,6 +82,14 @@ func main() {
 		r.Get("/api/meetings/upcoming", meetingHandler.Upcoming)
 		r.Patch("/api/meetings/{meetingId}", meetingHandler.Update)
 		r.Delete("/api/meetings/{meetingId}", meetingHandler.Delete)
+
+		// Notes (per application)
+		r.Post("/api/applications/{id}/notes", noteHandler.Create)
+		r.Get("/api/applications/{id}/notes", noteHandler.List)
+
+		// Notes (global)
+		r.Patch("/api/notes/{noteId}", noteHandler.Update)
+		r.Delete("/api/notes/{noteId}", noteHandler.Delete)
 	})
 
 	port := os.Getenv("PORT")
