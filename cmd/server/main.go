@@ -32,6 +32,7 @@ func main() {
 	appHandler := handler.NewApplicationHandler(db, aiService)
 	meetingHandler := handler.NewMeetingHandler(db)
 	noteHandler := handler.NewNoteHandler(db)
+	todoHandler := handler.NewTodoHandler(db)
 
 	r := chi.NewRouter()
 
@@ -90,6 +91,19 @@ func main() {
 		// Notes (global)
 		r.Patch("/api/notes/{noteId}", noteHandler.Update)
 		r.Delete("/api/notes/{noteId}", noteHandler.Delete)
+
+		r.Post("/api/todo-groups", todoHandler.CreateGroup)
+		r.Get("/api/todo-groups", todoHandler.ListGroups)
+		r.Patch("/api/todo-groups/{groupId}", todoHandler.UpdateGroup)
+		r.Delete("/api/todo-groups/{groupId}", todoHandler.DeleteGroup)
+
+		// Todos
+		r.Post("/api/todos", todoHandler.Create)
+		r.Get("/api/todos", todoHandler.List)
+		r.Get("/api/todos/date/{date}", todoHandler.GetForDate)
+		r.Patch("/api/todos/{todoId}", todoHandler.Update)
+		r.Patch("/api/todos/{todoId}/toggle", todoHandler.Toggle)
+		r.Delete("/api/todos/{todoId}", todoHandler.Delete)
 	})
 
 	port := os.Getenv("PORT")

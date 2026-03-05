@@ -295,3 +295,94 @@ type UpdateNoteRequest struct {
 	Title   *string `json:"title,omitempty"`
 	Content *string `json:"content,omitempty"`
 }
+
+// ADD TO internal/models/models.go
+// Make sure "database/sql" is in your imports for sql.NullTime
+
+// ============================================
+// TODO GROUP
+// ============================================
+
+type TodoGroup struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	Name      string    `json:"name"`
+	Color     string    `json:"color"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type CreateTodoGroupRequest struct {
+	Name  string `json:"name"`
+	Color string `json:"color,omitempty"`
+}
+
+type UpdateTodoGroupRequest struct {
+	Name  *string `json:"name,omitempty"`
+	Color *string `json:"color,omitempty"`
+}
+
+// ============================================
+// TODO
+// ============================================
+
+type Todo struct {
+	ID                  string          `json:"id"`
+	UserID              string          `json:"user_id"`
+	ApplicationID       *string         `json:"application_id,omitempty"`
+	GroupID             *string         `json:"group_id,omitempty"`
+	Title               string          `json:"title"`
+	Description         *string         `json:"description,omitempty"`
+	Completed           bool            `json:"completed"`
+	CompletedAt         *time.Time      `json:"completed_at,omitempty"`
+	Priority            int             `json:"priority"`
+	DueDate             *string         `json:"due_date,omitempty"`        // "2026-03-10"
+	DueTime             *string         `json:"due_time,omitempty"`        // "09:00"
+	ReminderAt          *time.Time      `json:"reminder_at,omitempty"`
+	ShouldCarryOver     bool            `json:"should_carry_over"`
+	IsRecurring         bool            `json:"is_recurring"`
+	RecurrenceRule      json.RawMessage `json:"recurrence_rule,omitempty"`
+	Notify              bool            `json:"notify"`
+	NotifyMinutesBefore *int            `json:"notify_minutes_before,omitempty"`
+	CreatedAt           time.Time       `json:"created_at"`
+	UpdatedAt           time.Time       `json:"updated_at"`
+
+	// Joined fields for frontend convenience
+	GroupName    *string `json:"group_name,omitempty"`
+	GroupColor   *string `json:"group_color,omitempty"`
+	CompanyName  *string `json:"company_name,omitempty"`
+	RoleTitle    *string `json:"role_title,omitempty"`
+}
+
+type CreateTodoRequest struct {
+	ApplicationID       *string         `json:"application_id,omitempty"`
+	GroupID             *string         `json:"group_id,omitempty"`
+	Title               string          `json:"title"`
+	Description         *string         `json:"description,omitempty"`
+	Priority            *int            `json:"priority,omitempty"`
+	DueDate             *string         `json:"due_date,omitempty"`
+	DueTime             *string         `json:"due_time,omitempty"`
+	ReminderAt          *time.Time      `json:"reminder_at,omitempty"`
+	ShouldCarryOver     *bool           `json:"should_carry_over,omitempty"`
+	IsRecurring         *bool           `json:"is_recurring,omitempty"`
+	RecurrenceRule      json.RawMessage `json:"recurrence_rule,omitempty"`
+	Notify              *bool           `json:"notify,omitempty"`
+	NotifyMinutesBefore *int            `json:"notify_minutes_before,omitempty"`
+}
+
+type UpdateTodoRequest struct {
+	ApplicationID       *string         `json:"application_id,omitempty"`
+	GroupID             *string         `json:"group_id,omitempty"`
+	Title               *string         `json:"title,omitempty"`
+	Description         *string         `json:"description,omitempty"`
+	Completed           *bool           `json:"completed,omitempty"`
+	Priority            *int            `json:"priority,omitempty"`
+	DueDate             *string         `json:"due_date,omitempty"`
+	DueTime             *string         `json:"due_time,omitempty"`
+	ReminderAt          *time.Time      `json:"reminder_at,omitempty"`
+	ShouldCarryOver     *bool           `json:"should_carry_over,omitempty"`
+	IsRecurring         *bool           `json:"is_recurring,omitempty"`
+	RecurrenceRule      json.RawMessage `json:"recurrence_rule,omitempty"`
+	Notify              *bool           `json:"notify,omitempty"`
+	NotifyMinutesBefore *int            `json:"notify_minutes_before,omitempty"`
+}
