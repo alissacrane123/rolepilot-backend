@@ -133,7 +133,7 @@ func (db *DB) CreateTodo(ctx context.Context, userID string, req models.CreateTo
 	if req.Priority != nil {
 		priority = *req.Priority
 	}
-	shouldCarry := false
+	shouldCarry := true
 	if req.ShouldCarryOver != nil {
 		shouldCarry = *req.ShouldCarryOver
 	}

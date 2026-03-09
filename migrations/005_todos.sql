@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS todos (
     due_date            DATE,                   -- when it's due
     due_time            TIME,                   -- optional time of day
     reminder_at         TIMESTAMPTZ,            -- don't show until this datetime
-    should_carry_over   BOOLEAN NOT NULL DEFAULT false,  -- carry to next day if incomplete
+    should_carry_over   BOOLEAN NOT NULL DEFAULT true,   -- carry to next day if incomplete
 
     -- Recurrence
     is_recurring        BOOLEAN NOT NULL DEFAULT false,
