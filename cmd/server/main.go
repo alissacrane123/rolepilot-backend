@@ -42,6 +42,7 @@ func main() {
 		AllowedOrigins: []string{
 			"http://localhost:3000",
 			"http://localhost:5173",
+			"https://rolepilot-frontend.vercel.app",
 			"https://rolepilot-frontend-nmgj.vercel.app",
 		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
